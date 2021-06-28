@@ -3,11 +3,13 @@ package gosocketio
 import (
 	"encoding/json"
 	"errors"
-	"github.com/graarh/golang-socketio/protocol"
-	"github.com/graarh/golang-socketio/transport"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/hnchenkai/golang-socketio/protocol"
+	"github.com/hnchenkai/golang-socketio/transport"
 )
 
 const (
@@ -117,6 +119,12 @@ func inLoop(c *Channel, m *methods) error {
 		if err != nil {
 			return closeChannel(c, m, err)
 		}
+		// 这里有一个风险，可能结尾是一个换行符
+		lt := strings.LastIndex(pkg, "\n")
+		if lt == len(pkg)-1 {
+			pkg = pkg[0:lt]
+		}
+
 		msg, err := protocol.Decode(pkg)
 		if err != nil {
 			closeChannel(c, m, protocol.ErrorWrongPacket)
